@@ -1,0 +1,24 @@
+#######################################
+# Syntax Coloring Map For USBMicrophone
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+USBMicro	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin		KEYWORD2
+end			KEYWORD2
+send		KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+MONO		LITERAL1
+STEREO	LITERAL1
