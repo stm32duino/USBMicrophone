@@ -51,6 +51,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio_if.h"
+#include "mp34dt01_l4_Driver.h"
 
 #ifdef USE_STM32L4XX_NUCLEO
 extern uint16_t PCM_Buffer[];
