@@ -39,21 +39,53 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 ******************************************************************************
-*/ 
+*/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USBD_AUDIO_IF_H
 #define __USBD_AUDIO_IF_H
 
+#ifdef USBCON
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio_in.h"
-#include "cube_hal.h"
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
+/*------------------------------------------------------------------------------
+ CONFIGURATION: Audio Driver Configuration parameters
+ ------------------------------------------------------------------------------*/
+
+  /* Audio status definition */
+#ifndef AUDIO_OK
+#define AUDIO_OK                            ((uint8_t)0)
+#endif
+
+#ifndef AUDIO_ERROR
+#define AUDIO_ERROR                         ((uint8_t)1)
+#endif
+
+#ifndef AUDIO_TIMEOUT
+#define AUDIO_TIMEOUT                       ((uint8_t)2)
+#endif
+
+#define DEFAULT_AUDIO_IN_VOLUME               64
+
+extern USBD_AUDIO_ItfTypeDef USBD_AUDIO_fops;
+
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void Send_Audio_to_USB(int16_t * audioData, uint16_t PCMSamples);
+void Send_Audio_to_USB(USBD_HandleTypeDef *pdev, int16_t * audioData, uint16_t PCMSamples);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif //USBCON
 
 #endif /* __USBD_AUDIO_IF_H */
 

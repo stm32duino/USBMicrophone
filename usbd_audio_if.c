@@ -41,6 +41,14 @@
 ******************************************************************************
 */
 
+#ifdef USBCON
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define USE_STM32L4XX_NUCLEO
+
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio_if.h"
 
@@ -65,7 +73,6 @@ static int8_t Audio_Resume(void);
 static int8_t Audio_CommandMgr(uint8_t cmd);
 
 /* Private variables ---------------------------------------------------------*/
-extern USBD_HandleTypeDef hUSBDDevice;
 USBD_AUDIO_ItfTypeDef USBD_AUDIO_fops = {
   Audio_Init,
   Audio_DeInit,
@@ -104,20 +111,24 @@ const int16_t vol_table[65] =
 */
 static int8_t Audio_Init(uint32_t  AudioFreq, uint32_t BitRes, uint32_t ChnlNbr)
 {
-#ifndef DISABLE_USB_DRIVEN_ACQUISITION 
-  return BSP_AUDIO_IN_Init(AudioFreq, BitRes, ChnlNbr);
+#ifndef DISABLE_USB_DRIVEN_ACQUISITION
+  return MP34DT01_Init(AudioFreq, BitRes, ChnlNbr);
 #else
+  UNUSED(AudioFreq);
+  UNUSED(BitRes);
+  UNUSED(ChnlNbr);
   return AUDIO_OK;
 #endif
 }
 
 /**
-* @brief  De-Initializes the AUDIO media low layer.      
+* @brief  De-Initializes the AUDIO media low layer.
 * @param  options: Reserved for future use
 * @retval AUDIO_OK in case of success, AUDIO_ERROR otherwise
 */
 static int8_t Audio_DeInit(uint32_t options)
 {
+  UNUSED(options);
   return AUDIO_OK;
 }
 
@@ -127,11 +138,12 @@ static int8_t Audio_DeInit(uint32_t options)
 */
 static int8_t Audio_Record(void)
 {
-#ifndef DISABLE_USB_DRIVEN_ACQUISITION  
+printf("Start audio record\n\r");
+#ifndef DISABLE_USB_DRIVEN_ACQUISITION
 #ifdef USE_STM32L4XX_NUCLEO
-  return BSP_AUDIO_IN_Record(PCM_Buffer, 0);
+  return MP34DT01_Record(PCM_Buffer, 0);
 #else
-  return BSP_AUDIO_IN_Record(PDM_Buffer, 0);
+  return MP34DT01_Record(PDM_Buffer, 0);
 #endif
 #else
   return AUDIO_OK;
@@ -139,7 +151,7 @@ static int8_t Audio_Record(void)
 }
 
 /**
-* @brief  Controls AUDIO Volume.             
+* @brief  Controls AUDIO Volume.
 * @param  vol: Volume level
 * @retval AUDIO_OK in case of success, AUDIO_ERROR otherwise
 */
@@ -147,7 +159,7 @@ static int8_t Audio_VolumeCtl(int16_t Volume)
 {
   /* Call low layer volume setting function */
   int j;
-  
+
   j = 0;
   /* Find the setting nearest to the desired setting */
   while(j<64 &&
@@ -155,18 +167,21 @@ static int8_t Audio_VolumeCtl(int16_t Volume)
           j++;
         }
   /* Now do the volume adjustment */
-  return BSP_AUDIO_IN_SetVolume((uint8_t)j);
-  
-  
+#ifndef DISABLE_USB_DRIVEN_ACQUISITION
+  return MP34DT01_SetVolume((uint8_t)j);
+#else
+  return AUDIO_OK;
+#endif
 }
 
 /**
-* @brief  Controls AUDIO Mute.              
+* @brief  Controls AUDIO Mute.
 * @param  cmd: Command opcode
 * @retval AUDIO_OK in case of success, AUDIO_ERROR otherwise
 */
 static int8_t Audio_MuteCtl(uint8_t cmd)
 {
+  UNUSED(cmd);
   return AUDIO_OK;
 }
 
@@ -177,9 +192,9 @@ static int8_t Audio_MuteCtl(uint8_t cmd)
 * @retval AUDIO_OK in case of success, AUDIO_ERROR otherwise
 */
 static int8_t Audio_Stop(void)
-{  
-#ifndef DISABLE_USB_DRIVEN_ACQUISITION  
-  return BSP_AUDIO_IN_Stop();  
+{
+#ifndef DISABLE_USB_DRIVEN_ACQUISITION
+  return MP34DT01_Stop();
 #else
   return AUDIO_OK;
 #endif
@@ -203,7 +218,7 @@ static int8_t Audio_Pause(void)
 * @retval AUDIO_OK in case of success, AUDIO_ERROR otherwise
 */
 static int8_t Audio_Resume(void)
-{  
+{
   return AUDIO_OK;
 }
 
@@ -215,6 +230,7 @@ static int8_t Audio_Resume(void)
 
 static int8_t Audio_CommandMgr(uint8_t cmd)
 {
+  UNUSED(cmd);
   return AUDIO_OK;
 }
 /**
@@ -227,17 +243,15 @@ static int8_t Audio_CommandMgr(uint8_t cmd)
 *       you can pass 16 PCM samples if the function is called each millisecond,
 *       32 samples if called every 2 milliseconds and so on.
 */
-void Send_Audio_to_USB(int16_t * audioData, uint16_t PCMSamples){
-  
-  USBD_AUDIO_Data_Transfer(&hUSBDDevice, (int16_t *)audioData, PCMSamples);
+void Send_Audio_to_USB(USBD_HandleTypeDef *pdev, int16_t * audioData, uint16_t PCMSamples){
+
+  USBD_AUDIO_Data_Transfer(pdev, (int16_t *)audioData, PCMSamples);
 }
 
+#ifdef __cplusplus
+}
+#endif
 
-
-
-
-
-
-
+#endif //USBCON
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
